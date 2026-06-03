@@ -1,0 +1,19 @@
+﻿campaign_id,brand_name,campaign_name,platform,deliverables,price,deadline,status,payment_status,invoice_status,revision_count,report_status,related_content_id
+camp_001,办公用品品牌,教程共创,bilibili,1 article,6067.51,2026-03-17,negotiating,unpaid,pending,0,not_started,c_0099
+camp_002,AI硬件品牌,新品推广,bilibili,1 article,2337.54,2026-07-08,confirmed,deposit_received,not_needed,3,sent,c_0044
+camp_003,在线教育品牌,品牌测评,wechat,1 article,11194.17,2026-03-07,reviewing,overdue,not_needed,1,not_started,c_0014
+camp_004,在线教育品牌,品牌测评,wechat,1 article,2021.71,2026-02-28,negotiating,overdue,not_needed,3,not_started,c_0014
+camp_005,在线教育品牌,资料包联合,bilibili,3 posts,1753.87,2026-04-28,reviewing,fully_paid,issued,3,not_started,c_0009
+camp_006,AI硬件品牌,品牌测评,douyin,1 video,11756.9,2026-02-23,reporting,overdue,issued,1,generated,c_0092
+camp_007,在线教育品牌,直播切片,douyin,1 video,4285.3,2026-04-06,reviewing,overdue,issued,1,sent,c_0023
+camp_008,效率工具品牌,教程共创,bilibili,1 video,13842.92,2026-04-22,scripting,deposit_received,issued,3,not_started,c_0076
+camp_009,效率工具品牌,新品推广,zhihu,1 article,5247.45,2026-07-16,confirmed,overdue,not_needed,0,not_started,c_0080
+camp_010,办公用品品牌,品牌测评,zhihu,1 article,4885.08,2026-07-01,published,overdue,issued,2,not_started,c_0093
+camp_011,在线教育品牌,品牌测评,zhihu,1 article,3730.04,2026-06-19,confirmed,deposit_received,issued,3,sent,c_0030
+camp_012,AI硬件品牌,直播切片,xiaohongshu,1 video,2395.89,2026-06-05,confirmed,unpaid,issued,1,not_started,c_0042
+camp_013,效率工具品牌,教程共创,douyin,1 article,3685.39,2026-05-16,reporting,overdue,pending,1,sent,c_0017
+camp_014,AI硬件品牌,直播切片,xiaohongshu,1 article,11395.05,2026-04-22,published,overdue,issued,1,generated,c_0026
+camp_015,办公用品品牌,新品推广,bilibili,3 posts,8008.7,2026-03-18,reviewing,overdue,issued,4,sent,c_0101
+camp_016,AI硬件品牌,直播切片,bilibili,1 video,8167.67,2026-03-18,completed,fully_paid,issued,4,not_started,c_0056
+camp_017,AI硬件品牌,品牌测评,xiaohongshu,1 livestream + 2 clips,7778.71,2026-03-13,reviewing,overdue,not_needed,2,not_started,c_0071
+camp_018,办公用品品牌,教程共创,douyin,1 article,2980.85,2026-02-19,reporting,fully_paid,pending,3,generated,c_0092

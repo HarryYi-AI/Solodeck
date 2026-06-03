@@ -1,0 +1,29 @@
+{
+  "purpose": "SoloDeck synthetic data for testing causal insight, auto-insights, similarity, product variants, feedback, and beta testing.",
+  "ground_truth_mechanisms": {
+    "platform": "douyin has higher exposure but lower conversion; xiaohongshu has higher favorite rate; wechat has stronger conversion; bilibili has stronger comments/long-form engagement.",
+    "title_style": "pain_point increases views; tutorial increases favorites; case_study and result_oriented increase conversions.",
+    "series_fatigue": "repeated similar items in math/AI series gradually reduce novelty and increase fatigue risk.",
+    "account_confounding": "accounts differ in follower base and authority; naive comparisons are biased.",
+    "product_features": "emotion_companion and touch_interaction improve hardware consultations/ratings; high price can reduce conversion.",
+    "beta_test": "treatment group has higher activation, retention, conversion, but not randomly perfect; selection bias may remain."
+  },
+  "recommended_tests": [
+    "Naive groupby vs fixed effects for account/platform confounding.",
+    "Paired content_group_id comparison across platforms.",
+    "PSM/IPTW for pain_point title effect.",
+    "Series fatigue detection using series_id and time order.",
+    "Product variant feature analysis using feature_tags.",
+    "Beta test uplift analysis for treatment vs control.",
+    "Feedback topic clustering and roadmap generation."
+  ],
+  "rows": {
+    "contents": 104,
+    "products": 32,
+    "feedback": 140,
+    "beta_tests": 100,
+    "revenues": 90,
+    "campaigns": 18,
+    "ab_tests": 50
+  }
+}

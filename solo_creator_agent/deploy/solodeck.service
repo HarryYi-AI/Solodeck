@@ -1,0 +1,14 @@
+[Unit]
+Description=SoloDeck Streamlit App
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/workspace/ylj/harry_main/heikesong/solo_creator_agent
+EnvironmentFile=/workspace/ylj/harry_main/heikesong/.env
+ExecStart=/usr/bin/python3 -m streamlit run app.py --server.address 127.0.0.1 --server.port 8501
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

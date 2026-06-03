@@ -1,0 +1,10 @@
+product_id,product_name,category,series_id,launch_date,price,cost,material,color,style,size,weight,feature_tags,target_user,platform,views,clicks,consultations,conversions,revenue,refund_count,review_count,avg_rating,is_new_version,parent_product_id
+P-AI-001,SoloBot 桌面陪伴机器人基础版,hardware_device,solobot,2026-03-13,699,310,plastic,white,minimal,standard,0.3,"voice_interaction, alarm, desktop_decoration","creator, solo_company",xiaohongshu,18317,3170,373,29,20271.0,1,18,3.78,False,
+P-AI-002,SoloBot 情绪陪伴版,hardware_device,solobot,2026-03-20,899,360,plastic,green,cute,standard,1.04,"voice_interaction, emotion_companion, music_playback","creator, solo_company",bilibili,9270,602,156,24,21576.0,0,22,3.33,True,P-AI-001
+P-AI-003,SoloBot 触摸互动版,hardware_device,solobot,2026-03-27,999,430,silicone,white,cute,standard,0.61,"touch_interaction, emotion_companion, alarm","creator, solo_company",douyin,20987,2186,373,59,58941.0,6,38,4.56,True,P-AI-001
+P-AI-004,SoloBot 闹钟轻量版,hardware_device,solobot,2026-04-03,499,220,plastic,blue,minimal,standard,1.12,"alarm, desktop_decoration","creator, solo_company",wechat,9448,1295,348,27,13473.0,2,12,3.79,False,P-AI-001
+P-LAMP-001,FoldDesk 台灯黑色款,home_product,desk_lamp,2026-04-10,199,88,aluminum,black,foldable,standard,0.34,"eye_protection, dimming",office_user,zhihu,11298,1844,298,35,6965.0,3,37,3.81,False,
+P-LAMP-002,FoldDesk 台灯奶油白款,home_product,desk_lamp,2026-04-17,219,90,aluminum,white,foldable,standard,0.94,"eye_protection, dimming",office_user,xiaohongshu,19231,1464,156,18,3942.0,0,24,4.03,False,P-LAMP-001
+P-CASE-001,MagCase 透明手机壳,accessory,phone_case,2026-04-24,59,18,tpu,clear,simple,standard,0.29,"anti_drop, magnetic",office_user,bilibili,11571,1208,174,13,767.0,1,17,4.21,False,
+P-CASE-002,MagCase 彩色手机壳,accessory,phone_case,2026-05-01,69,20,tpu,pink,cute,standard,0.69,"anti_drop, magnetic",office_user,douyin,18002,2304,512,40,2760.0,2,52,4.15,False,P-CASE-001
+P-NOTE-001,FocusNote 周计划本,accessory,notebook,2026-05-08,49,16,paper,green,planner,standard,0.62,"weekly_plan, habit_tracking",office_user,wechat,24904,4311,1158,92,4508.0,8,105,4.38,False,

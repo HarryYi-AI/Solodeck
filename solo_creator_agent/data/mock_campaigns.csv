@@ -1,0 +1,11 @@
+campaign_id,brand_name,campaign_name,platform,deliverables,price,deadline,status,payment_status,invoice_status,revision_count,report_status,related_content_id
+B001,青石AI,商业案例合作推广,tiktok,1篇深度内容,44751.0,2026-06-03,negotiating,unpaid,pending,1,not_started,C0047
+B002,北岸效率,商业案例合作推广,tiktok,1篇图文 + 1条短视频,43158.0,2026-06-06,confirmed,deposit_received,not_needed,0,not_started,C0057
+B003,映川教育,知识付费合作推广,wechat,1篇深度内容,23338.0,2026-06-09,scripting,fully_paid,issued,2,not_started,C0004
+B004,云谷SaaS,商业案例合作推广,substack,1篇图文 + 1条短视频,19575.0,2026-06-02,reviewing,unpaid,pending,3,not_started,C0009
+B005,晴山咖啡,商业案例合作推广,tiktok,1篇深度内容,40493.0,2026-05-29,published,overdue,pending,1,not_started,C0017
+B006,青石AI,知识付费合作推广,substack,1篇图文 + 1条短视频,14405.0,2026-06-11,reporting,deposit_received,issued,4,not_started,C0039
+B007,北岸效率,商业案例合作推广,wechat,1篇深度内容,15187.0,2026-05-31,completed,fully_paid,issued,1,sent,C0044
+B008,映川教育,知识付费合作推广,instagram,1篇图文 + 1条短视频,21312.0,2026-05-27,published,overdue,pending,2,not_started,C0018
+B009,云谷SaaS,职场效率合作推广,wechat,1篇深度内容,14451.0,2026-06-13,completed,fully_paid,not_needed,0,sent,C0074
+B010,晴山咖啡,产品化服务合作推广,wechat,1篇图文 + 1条短视频,10308.0,2026-06-04,reviewing,unpaid,pending,3,generated,C0054

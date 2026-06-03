@@ -1,0 +1,91 @@
+﻿revenue_id,date,amount,revenue_type,platform,content_id,product_id,client_name,status,note
+r_0001,2026-03-08,150.09,affiliate,zhihu,c_0001,,B客户,received,content attributed revenue
+r_0002,2026-03-19,4937.01,digital_product,zhihu,c_0002,,A品牌,overdue,content attributed revenue
+r_0003,2026-02-08,198.59,affiliate,zhihu,c_0003,,B客户,received,content attributed revenue
+r_0004,2026-03-21,331.61,consulting,bilibili,c_0011,,B客户,received,content attributed revenue
+r_0005,2026-03-23,304.24,consulting,douyin,c_0012,,C工作室,pending,content attributed revenue
+r_0006,2026-03-24,2785.51,affiliate,xiaohongshu,c_0013,,,received,content attributed revenue
+r_0007,2026-02-15,1481.38,digital_product,wechat,c_0014,,A品牌,pending,content attributed revenue
+r_0008,2026-02-21,1470.93,consulting,zhihu,c_0015,,A品牌,received,content attributed revenue
+r_0009,2026-02-22,1207.52,digital_product,bilibili,c_0016,,C工作室,received,content attributed revenue
+r_0010,2026-04-30,793.21,brand_ads,douyin,c_0017,,,received,content attributed revenue
+r_0011,2026-02-13,8198.69,course,bilibili,c_0019,,C工作室,received,content attributed revenue
+r_0012,2026-05-08,2344.32,brand_ads,zhihu,c_0020,,,received,content attributed revenue
+r_0013,2026-03-16,1696.25,digital_product,bilibili,c_0022,,A品牌,received,content attributed revenue
+r_0014,2026-03-16,2932.36,digital_product,douyin,c_0023,,C工作室,received,content attributed revenue
+r_0015,2026-03-17,1703.68,affiliate,zhihu,c_0024,,B客户,received,content attributed revenue
+r_0016,2026-04-10,2583.6,brand_ads,xiaohongshu,c_0026,,C工作室,received,content attributed revenue
+r_0017,2026-04-08,6691.77,digital_product,wechat,c_0027,,B客户,received,content attributed revenue
+r_0018,2026-05-26,632.72,course,zhihu,c_0030,,,pending,content attributed revenue
+r_0019,2026-01-17,3522.11,course,xiaohongshu,c_0031,,B客户,received,content attributed revenue
+r_0020,2026-01-21,1153.24,affiliate,wechat,c_0032,,C工作室,overdue,content attributed revenue
+r_0021,2026-01-21,18093.33,consulting,wechat,c_0038,,C工作室,received,content attributed revenue
+r_0022,2026-03-14,1141.05,consulting,douyin,c_0039,,C工作室,received,content attributed revenue
+r_0023,2026-01-15,89.63,digital_product,bilibili,c_0040,,C工作室,received,content attributed revenue
+r_0024,2026-05-31,1596.43,consulting,xiaohongshu,c_0042,,A品牌,received,content attributed revenue
+r_0025,2026-06-14,608.7,digital_product,bilibili,c_0044,,,pending,content attributed revenue
+r_0026,2026-06-20,938.44,digital_product,douyin,c_0045,,,received,content attributed revenue
+r_0027,2026-02-26,508.89,course,douyin,c_0047,,C工作室,received,content attributed revenue
+r_0028,2026-04-28,92.66,consulting,zhihu,c_0049,,,received,content attributed revenue
+r_0029,2026-06-09,360.48,consulting,zhihu,c_0050,,,received,content attributed revenue
+r_0030,2026-06-08,260.71,service,bilibili,c_0051,,C工作室,received,content attributed revenue
+r_0031,2026-01-30,100.11,service,bilibili,c_0052,,A品牌,received,content attributed revenue
+r_0032,2026-06-02,132.72,brand_ads,zhihu,c_0053,,,received,content attributed revenue
+r_0033,2026-03-13,100.72,service,bilibili,c_0056,,A品牌,received,content attributed revenue
+r_0034,2026-03-14,99.95,consulting,bilibili,c_0057,,C工作室,received,content attributed revenue
+r_0035,2026-07-03,167.13,digital_product,xiaohongshu,c_0059,,A品牌,received,content attributed revenue
+r_0036,2026-04-07,80.27,service,bilibili,c_0060,,A品牌,received,content attributed revenue
+r_0037,2026-01-31,1561.89,digital_product,zhihu,c_0062,,B客户,received,content attributed revenue
+r_0038,2026-05-29,102.63,service,zhihu,c_0065,,C工作室,received,content attributed revenue
+r_0039,2026-04-23,179.88,consulting,zhihu,c_0067,,A品牌,received,content attributed revenue
+r_0040,2026-01-26,2675.53,service,xiaohongshu,c_0069,,C工作室,received,content attributed revenue
+r_0041,2026-05-08,646.62,digital_product,xiaohongshu,c_0070,,,received,content attributed revenue
+r_0042,2026-03-01,280.47,service,xiaohongshu,c_0071,,C工作室,received,content attributed revenue
+r_0043,2026-02-12,442.41,service,xiaohongshu,c_0073,,B客户,received,content attributed revenue
+r_0044,2026-04-16,172.2,affiliate,bilibili,c_0076,,A品牌,received,content attributed revenue
+r_0045,2026-04-16,155.23,course,douyin,c_0077,,C工作室,received,content attributed revenue
+r_0046,2026-07-07,89.39,service,zhihu,c_0080,,A品牌,received,content attributed revenue
+r_0047,2026-04-03,1021.66,course,douyin,c_0082,,,received,content attributed revenue
+r_0048,2026-05-12,16230.12,service,wechat,c_0083,,B客户,pending,content attributed revenue
+r_0049,2026-05-14,13265.35,digital_product,xiaohongshu,c_0084,,,received,content attributed revenue
+r_0050,2026-01-24,104.34,digital_product,zhihu,c_0090,,A品牌,pending,content attributed revenue
+r_0051,2026-01-31,394.75,consulting,douyin,c_0092,,,overdue,content attributed revenue
+r_0052,2026-06-27,105.71,course,zhihu,c_0093,,,received,content attributed revenue
+r_0053,2026-06-26,78.96,affiliate,bilibili,c_0094,,C工作室,received,content attributed revenue
+r_0054,2026-03-25,7434.7,consulting,wechat,c_0095,,,received,content attributed revenue
+r_0055,2026-05-17,386.51,course,bilibili,c_0097,,C工作室,received,content attributed revenue
+r_0056,2026-05-18,1777.74,affiliate,xiaohongshu,c_0098,,A品牌,received,content attributed revenue
+r_0057,2026-02-27,468.37,course,xiaohongshu,c_0100,,,received,content attributed revenue
+r_0058,2026-05-05,407.07,course,bilibili,c_0102,,C工作室,received,content attributed revenue
+r_0059,2026-04-22,41827.8,product_sales,xiaohongshu,,p_0001,,received,product sales
+r_0060,2026-04-19,22083.0,product_sales,douyin,,p_0002,,received,product sales
+r_0061,2026-04-23,13444.65,product_sales,xiaohongshu,,p_0003,,received,product sales
+r_0062,2026-04-08,83655.6,product_sales,douyin,,p_0004,,pending,product sales
+r_0063,2026-03-15,26889.3,product_sales,bilibili,,p_0005,,received,product sales
+r_0064,2026-02-10,44166.0,product_sales,bilibili,,p_0006,,received,product sales
+r_0065,2026-02-24,15782.85,product_sales,bilibili,,p_0007,,received,product sales
+r_0066,2026-06-07,63651.0,product_sales,zhihu,,p_0008,,received,product sales
+r_0067,2026-04-22,673.2,product_sales,bilibili,,p_0009,,received,product sales
+r_0068,2026-05-05,2806.65,product_sales,douyin,,p_0010,,received,product sales
+r_0069,2026-06-10,1138.5,product_sales,xiaohongshu,,p_0011,,received,product sales
+r_0070,2026-03-10,2049.3,product_sales,zhihu,,p_0012,,received,product sales
+r_0071,2026-05-04,925.65,product_sales,douyin,,p_0013,,received,product sales
+r_0072,2026-04-17,6014.25,product_sales,wechat,,p_0014,,received,product sales
+r_0073,2026-01-23,4950.0,product_sales,bilibili,,p_0015,,received,product sales
+r_0074,2026-04-19,9702.0,product_sales,bilibili,,p_0016,,received,product sales
+r_0075,2026-05-02,995.0,product_sales,zhihu,,p_0017,,received,product sales
+r_0076,2026-06-02,3890.45,product_sales,bilibili,,p_0018,,received,product sales
+r_0077,2026-06-13,2288.5,product_sales,xiaohongshu,,p_0019,,received,product sales
+r_0078,2026-03-03,507.45,product_sales,douyin,,p_0020,,received,product sales
+r_0079,2026-01-29,676.6,product_sales,xiaohongshu,,p_0021,,received,product sales
+r_0080,2026-05-27,1194.0,product_sales,douyin,,p_0022,,received,product sales
+r_0081,2026-06-12,686.55,product_sales,zhihu,,p_0023,,received,product sales
+r_0082,2026-05-15,9353.0,product_sales,wechat,,p_0024,,received,product sales
+r_0083,2026-01-24,210.6,product_sales,xiaohongshu,,p_0025,,received,product sales
+r_0084,2026-02-13,368.55,product_sales,wechat,,p_0026,,received,product sales
+r_0085,2026-03-30,265.2,product_sales,douyin,,p_0027,,received,product sales
+r_0086,2026-03-04,741.0,product_sales,douyin,,p_0028,,pending,product sales
+r_0087,2026-02-07,269.1,product_sales,bilibili,,p_0029,,received,product sales
+r_0088,2026-01-26,852.15,product_sales,zhihu,,p_0030,,received,product sales
+r_0089,2026-02-15,429.0,product_sales,wechat,,p_0031,,received,product sales
+r_0090,2026-06-16,265.2,product_sales,douyin,,p_0032,,received,product sales
