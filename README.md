@@ -5,6 +5,7 @@ SoloDeck is an AI operating advisor for creators, solo businesses, and small pro
 中文简介：SoloDeck 是面向内容创作者、一人公司和小型产品团队的 AI 经营分析 Agent，把内容、收入、反馈、商务合作和实验数据转化为可验证的下一步经营动作。
 
 <img width="1495" height="798" alt="image" src="https://github.com/user-attachments/assets/1092a0cb-7e6a-4f41-a9a3-9560e0cc4729" />
+<img width="1419" height="931" alt="image" src="https://github.com/user-attachments/assets/1a0ecda6-09fa-4442-aecd-d6e5a1fd15f1" />
 <img width="1529" height="920" alt="image" src="https://github.com/user-attachments/assets/ba179ed1-0c22-4571-a1d8-6dab9796b157" />
 <img width="1493" height="534" alt="image" src="https://github.com/user-attachments/assets/8f6c8ac1-d855-4424-93b6-e050ee360511" />
 
