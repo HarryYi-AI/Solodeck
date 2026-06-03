@@ -131,6 +131,12 @@ def weekly_topic_plan(contents: pd.DataFrame, revenues: pd.DataFrame, n: int = 7
     platform_table = platform_result["table"]
     title_table = title_result["table"]
     objectives = ["growth", "engagement", "conversion", "monetization"]
+    objective_labels_zh = {
+        "growth": "拉新增长",
+        "engagement": "互动讨论",
+        "conversion": "咨询转化",
+        "monetization": "商业变现",
+    }
     plans = []
     for i in range(n):
         if objectives[i % 4] == "growth":
@@ -144,12 +150,13 @@ def weekly_topic_plan(contents: pd.DataFrame, revenues: pd.DataFrame, n: int = 7
         platform = platform_table.iloc[i % len(platform_table)]["platform"]
         style = title_table.iloc[i % len(title_table)]["title_style"]
         objective = objectives[i % 4]
+        objective_label = objective_labels_zh.get(objective, objective)
         plans.append({
             "suggested_topic": topic["topic"],
             "suggested_platform": platform,
             "suggested_title_style": style,
             "objective": objective,
-            "reason": f"{topic['topic']}在历史数据中 {objective} 指标较强，适合下周继续验证。" if language == "中文" else f"{topic['topic']} has stronger historical {objective} performance, so it is worth validating next week.",
+            "reason": f"“{topic['topic']}”过去在{objective_label}上表现较好，适合下周小范围验证。" if language == "中文" else f"{topic['topic']} has stronger historical {objective} performance, so it is worth validating next week.",
             "sample_title": _sample_title(topic["topic"], style, language=language),
         })
     return plans

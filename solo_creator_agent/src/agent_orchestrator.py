@@ -120,15 +120,17 @@ def _style_label(style: str, lang: str) -> str:
 
 def _feature_label(feature: str, lang: str) -> str:
     if lang != "中文":
-        return str(feature).replace("_", " ")
-    return {
+        return str(feature).replace("|", ", ").replace("_", " ")
+    labels = {
         "emotion_companion": "情绪陪伴功能",
         "touch_interaction": "触摸互动功能",
         "voice_interaction": "语音互动",
         "alarm": "提醒功能",
         "music_playback": "音乐播放",
         "desktop_decoration": "桌面陪伴摆件",
-    }.get(str(feature), str(feature))
+    }
+    parts = [part.strip() for part in str(feature).replace("|", ",").split(",") if part.strip()]
+    return "、".join(labels.get(part, part) for part in parts) if parts else str(feature)
 
 
 def _confidence(n: int, effect: float | None = None, low: float | None = None, high: float | None = None, lang: str = "中文") -> str:
@@ -362,7 +364,9 @@ def strategy_simulation_agent(contents: pd.DataFrame, revenues: pd.DataFrame, pr
             ))
 
     if not products.empty and {"feature_tags", "revenue"}.issubset(products.columns):
-        exploded = products.assign(feature=products["feature_tags"].fillna("").astype(str).str.split(",")).explode("feature")
+        feature_text = products["feature_tags"].fillna("").astype(str).str.replace("|", ",", regex=False)
+        exploded = products.assign(feature=feature_text.str.split(",")).explode("feature")
+        exploded["feature"] = exploded["feature"].fillna("").astype(str).str.strip()
         feature_table = exploded.groupby("feature", as_index=False).agg(revenue=("revenue", "sum"), conversions=("conversions", "sum"), avg_rating=("avg_rating", "mean"))
         feature_table = feature_table[feature_table["feature"].astype(str).str.len().gt(0)].sort_values("revenue", ascending=False)
         if not feature_table.empty:

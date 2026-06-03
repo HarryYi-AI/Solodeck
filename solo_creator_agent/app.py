@@ -459,14 +459,16 @@ def suggestion_cards(items: list[dict], lang: str = "中文"):
         title = item.get("title", "建议" if lang == "中文" else "Recommendation")
         reason = item.get("reason", "")
         action = item.get("action") or item.get("detail") or ""
-        if lang != "中文":
+        if lang == "中文":
+            title, reason, action = chineseize_text(title), chineseize_text(reason), chineseize_text(action)
+        else:
             title, reason, action = englishize_text(title), englishize_text(reason), englishize_text(action)
         render_html(
             f"""
             <div class="priority-card {rank}">
               <div class="priority-row"><span class="priority-chip {rank}">{label}</span><span class="priority-title">{safe_text(title)}</span></div>
-              <div class="soft-muted">{reason}</div>
-              <div class="priority-body">{action}</div>
+              <div class="soft-muted">{safe_text(reason)}</div>
+              <div class="priority-body">{safe_text(action)}</div>
             </div>
             """
         )
@@ -859,7 +861,9 @@ def render_task_section(items: list[dict], lang: str, limit: int = 9, key_prefix
         source = item.get("source", "")
         title = item.get("title", "")
         detail = item.get("detail", "")
-        if not zh:
+        if zh:
+            source, title, detail = chineseize_text(source), chineseize_text(title), chineseize_text(detail)
+        else:
             source, title, detail = englishize_text(source), englishize_text(title), englishize_text(detail)
         with cols[index % 3]:
             render_html(
@@ -1119,6 +1123,52 @@ def englishize_text(value) -> str:
     return text
 
 
+def chineseize_text(value) -> str:
+    text = "" if value is None else str(value)
+    replacements = {
+        "growth": "拉新增长",
+        "engagement": "互动讨论",
+        "conversion": "咨询转化",
+        "monetization": "商业变现",
+        "User Test Feedback Notes": "用户内测反馈",
+        "Performance": "性能体验",
+        "business demos": "商务演示",
+        "Business demos": "商务演示",
+        "Roadmap": "迭代计划",
+        "feature": "功能",
+        "Feature": "功能需求",
+        "Trust": "信任问题",
+        "emotion_companion": "情绪陪伴功能",
+        "voice_interaction": "语音互动",
+        "desktop_decoration": "桌面陪伴摆件",
+        "touch_interaction": "触摸互动功能",
+        "music_playback": "音乐播放",
+        "weekly_plan": "周计划功能",
+        "habit_tracking": "习惯追踪功能",
+        "converted": "成交",
+        "retained_7d": "7日留存",
+        "avg_rating": "平均评分",
+        "conversion_rate": "转化率",
+        "favorite_rate": "收藏率",
+        "follow_rate": "转粉率",
+        "view_rate": "曝光效率",
+        "negotiating": "沟通中",
+        "confirmed": "已确认",
+        "scripting": "脚本中",
+        "reviewing": "审核中",
+        "published": "已发布",
+        "reporting": "复盘中",
+        "completed": "已完成",
+        "unpaid": "未收款",
+        "overdue": "已逾期",
+        "deposit_received": "已收定金",
+        "fully_paid": "已结清",
+    }
+    for raw, label in replacements.items():
+        text = text.replace(raw, label)
+    return text.replace("|", "、")
+
+
 def localize_frame(df: pd.DataFrame, lang: str) -> pd.DataFrame:
     if df.empty:
         return df
@@ -1140,6 +1190,9 @@ def localize_frame(df: pd.DataFrame, lang: str) -> pd.DataFrame:
         out["outcome_metric"] = out["outcome_metric"].map(METRIC_LABELS_ZH).fillna(out["outcome_metric"])
     if "objective" in out.columns:
         out["objective"] = out["objective"].map(OBJECTIVE_LABELS_ZH).fillna(out["objective"])
+    for col in ["title", "source", "detail", "reason", "action", "confidence", "finding_type", "insight", "feature", "feature_tags", "expected_metric_to_watch"]:
+        if col in out.columns:
+            out[col] = out[col].map(chineseize_text).fillna(out[col])
     return out
 
 
@@ -1508,7 +1561,8 @@ def product_variant_action_cards(products: pd.DataFrame, beta_tests: pd.DataFram
             parent_id = str(row.get("parent_product_id", "") or "")
             parent_delta = float(row.get("revenue", 0)) - float(parent_revenue.get(parent_id, 0))
             conv_rate = float(row.get("conversions", 0)) / max(float(row.get("views", 0)), 1)
-            feature = feature_label(str(row.get("feature_tags", "")).split(",")[0].strip(), lang) or ("核心卖点" if zh else "main feature")
+            raw_features = str(row.get("feature_tags", "")).replace("|", ",")
+            feature = feature_label(raw_features.split(",")[0].strip(), lang) or ("核心卖点" if zh else "main feature")
             category = PRODUCT_CATEGORY_ZH.get(str(row.get("category", "")), str(row.get("category", ""))) if zh else str(row.get("category", "")).replace("_", " ")
             if zh:
                 reason = f"收入 {money(row.get('revenue', 0))}，成交 {int(row.get('conversions', 0))}，转化率 {conv_rate:.2%}。"
