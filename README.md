@@ -272,9 +272,17 @@ OPENAI_MODEL_ADVANCED=GLM-5-Turbo
 
 SOLODECK_ACCESS_CODE=your-demo-code
 SOLODECK_REQUIRE_LOGIN=false
+CREATOR_ALIPAY_ACCOUNT=your-payment-account
 ```
 
 The app can run with mock/demo data without an LLM key. LLM keys enable screenshot/text extraction and more polished natural-language advice.
+
+Security note:
+
+- Do not commit `.env` to GitHub.
+- Keep real API keys, access codes, and payment accounts in environment variables.
+- This repository only includes placeholders and `.env.example` style configuration.
+- If a key is accidentally committed, revoke it immediately and generate a new one.
 
 ## Generate Demo Data
 
@@ -347,4 +355,3 @@ productivity
 ## License
 
 This project is prepared for hackathon and demo use. Add a license before public commercial distribution.
-

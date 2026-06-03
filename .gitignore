@@ -1,6 +1,12 @@
 node_modules
 dist
 .env
+.env.local
+.env.*.local
+.env.production
+.env.development
+!.env.example
+!solo_creator_agent/.env.example
 .DS_Store
 *.log
 *.db

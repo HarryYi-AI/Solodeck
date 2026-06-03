@@ -2584,7 +2584,7 @@ with tabs[2]:
     st.caption(price_result["explanation"] if ZH else englishize_text(price_result["explanation"]))
 
     st.markdown("### 收款信息" if ZH else "### Payment Info")
-    alipay_account = os.getenv("CREATOR_ALIPAY_ACCOUNT", "18431011225")
+    alipay_account = os.getenv("CREATOR_ALIPAY_ACCOUNT", "").strip() or ("未配置" if ZH else "Not configured")
     selected_amount = st.number_input("本次收款金额" if ZH else "Payment Amount", min_value=0, value=int(price_result["mid"]), step=100)
     payment_note = st.text_input("转账备注" if ZH else "Payment Note", "品牌合作定金 / 内容推广服务费" if ZH else "Sponsorship deposit / content promotion service")
     with st.container(border=True):
