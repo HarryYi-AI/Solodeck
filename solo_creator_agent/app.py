@@ -4,6 +4,7 @@ import os
 import sys
 import hashlib
 import html
+from io import BytesIO
 import json
 import re
 from datetime import date, datetime, timedelta
@@ -438,6 +439,129 @@ def use_example_data() -> bool:
 
 def metric_card(label: str, value, help_text: str | None = None):
     st.metric(label, value, help=help_text)
+
+
+def ensure_date_column(df: pd.DataFrame, column: str, lang: str, label: str) -> pd.DataFrame:
+    out = df.copy()
+    if column not in out.columns:
+        out[column] = pd.Timestamp.utcnow().date()
+        st.warning(
+            f"{label}缺少“{column}”字段，已临时使用今天日期。"
+            if lang == "中文"
+            else f"{label} is missing “{column}”; today's date was used temporarily."
+        )
+        return out
+    parsed = pd.to_datetime(out[column], errors="coerce")
+    out[column] = parsed.dt.date
+    if parsed.isna().any():
+        out[column] = out[column].fillna(pd.Timestamp.utcnow().date())
+        st.warning(
+            f"{label}中部分“{column}”无法识别，已临时使用今天日期。"
+            if lang == "中文"
+            else f"Some “{column}” values in {label} could not be parsed; today's date was used temporarily."
+        )
+    return out
+
+
+CSV_TABLE_SIGNATURES = {
+    "contents": {"content_id", "title", "platform", "topic", "publish_time", "views", "likes", "favorites", "comments", "new_followers", "consultations", "conversions", "revenue"},
+    "revenues": {"revenue_id", "date", "amount", "revenue_type", "platform", "client_name", "status", "note"},
+    "campaigns": {"campaign_id", "brand_name", "campaign_name", "deliverables", "price", "deadline", "payment_status", "invoice_status", "revision_count", "report_status"},
+    "ab_tests": {"experiment_id", "date", "treatment_value", "control_value", "outcome_metric", "group", "content_id", "outcome_value"},
+    "products": {"product_id", "product_name", "feature_tags", "price", "launch_date", "category", "conversions", "revenue"},
+    "feedback": {"feedback_id", "related_product_id", "issue_type", "sentiment", "severity", "feedback_text", "created_at"},
+    "beta_tests": {"beta_test_id", "product_id", "feature_name", "test_group", "retained_7d", "converted", "experienced_at"},
+}
+
+
+def infer_csv_table(df: pd.DataFrame) -> str:
+    cols = {str(col).strip().lower() for col in df.columns}
+    scores = {table: len(cols & signature) for table, signature in CSV_TABLE_SIGNATURES.items()}
+    best_table = max(scores, key=scores.get)
+    return best_table if scores[best_table] >= 2 else "contents"
+
+
+def read_uploaded_csv_auto(uploaded_file) -> pd.DataFrame:
+    return pd.read_csv(BytesIO(uploaded_file.getvalue()))
+
+
+def append_dataframe(base: pd.DataFrame, incoming: pd.DataFrame) -> pd.DataFrame:
+    if incoming is None or incoming.empty:
+        return base
+    added = incoming.copy()
+    if base.empty and len(base.columns) == 0:
+        return added.reset_index(drop=True)
+    for col in base.columns:
+        if col not in added.columns:
+            added[col] = "" if base[col].dtype == object else 0
+    added = added[[col for col in base.columns]]
+    return pd.concat([base, added], ignore_index=True)
+
+
+def normalize_uploaded_table(df: pd.DataFrame, table: str, lang: str) -> pd.DataFrame:
+    label_map = {
+        "contents": "内容 CSV" if lang == "中文" else "Contents CSV",
+        "revenues": "收入 CSV" if lang == "中文" else "Revenues CSV",
+        "campaigns": "商务 CSV" if lang == "中文" else "Campaigns CSV",
+        "ab_tests": "实验 CSV" if lang == "中文" else "Experiment CSV",
+        "products": "产品 CSV" if lang == "中文" else "Products CSV",
+        "feedback": "反馈 CSV" if lang == "中文" else "Feedback CSV",
+        "beta_tests": "内测 CSV" if lang == "中文" else "User Tests CSV",
+    }
+    out = df.copy()
+    if table == "contents":
+        out = ensure_date_column(out, "publish_time", lang, label_map[table])
+        out["publish_time"] = pd.to_datetime(out["publish_time"], errors="coerce").fillna(pd.Timestamp.now())
+    elif table == "revenues":
+        out = ensure_date_column(out, "date", lang, label_map[table])
+    elif table == "campaigns":
+        out = ensure_date_column(out, "deadline", lang, label_map[table])
+    elif table == "ab_tests":
+        out = ensure_date_column(out, "date", lang, label_map[table])
+    elif table == "products":
+        out = ensure_date_column(out, "launch_date", lang, label_map[table])
+    elif table == "feedback":
+        if "created_at" in out.columns:
+            out["created_at"] = pd.to_datetime(out["created_at"], errors="coerce")
+    elif table == "beta_tests":
+        for col in ["invited_at", "experienced_at"]:
+            if col in out.columns:
+                out[col] = pd.to_datetime(out[col], errors="coerce")
+    return out
+
+
+def guess_import_target(text: str, files: list | None = None) -> str:
+    names = " ".join(getattr(file, "name", "") for file in files or [])
+    hint = f"{names} {text or ''}".lower()
+    campaign_keys = ["商单", "合作", "报价", "品牌", "甲方", "合同", "交付", "campaign", "brand", "deadline", "invoice"]
+    revenue_keys = ["订单", "收款", "付款", "支付", "金额", "收入", "账单", "流水", "发票", "order", "payment", "revenue", "invoice", "¥", "$"]
+    if any(key in hint for key in campaign_keys):
+        return "campaigns"
+    if any(key in hint for key in revenue_keys):
+        return "revenues"
+    return "contents"
+
+
+def table_label(table: str, lang: str) -> str:
+    zh_labels = {
+        "contents": "内容",
+        "revenues": "收入",
+        "campaigns": "商务合作",
+        "ab_tests": "实验",
+        "products": "产品",
+        "feedback": "反馈",
+        "beta_tests": "内测",
+    }
+    en_labels = {
+        "contents": "content",
+        "revenues": "revenue",
+        "campaigns": "campaigns",
+        "ab_tests": "experiments",
+        "products": "products",
+        "feedback": "feedback",
+        "beta_tests": "user tests",
+    }
+    return (zh_labels if lang == "中文" else en_labels).get(table, table)
 
 
 def render_html(markup: str) -> None:
@@ -2048,44 +2172,127 @@ with st.expander("设置与数据文件" if ZH else "Settings and CSV Data", exp
     if llm_configured():
         st.caption("智能建议已开启。" if ZH else "Smart advice is enabled.")
 
-    csv_cols = st.columns(4)
-    content_file = csv_cols[0].file_uploader("内容 CSV" if ZH else "Contents CSV", type=["csv"])
-    revenue_file = csv_cols[1].file_uploader("收入 CSV" if ZH else "Revenues CSV", type=["csv"])
-    campaign_file = csv_cols[2].file_uploader("商务 CSV" if ZH else "Campaigns CSV", type=["csv"])
-    ab_file = csv_cols[3].file_uploader("实验 CSV" if ZH else "Experiment CSV", type=["csv"])
-    if content_file:
-        save_uploaded_file(st.session_state.get("user_id"), content_file, category="contents_csv")
-        contents = read_uploaded_csv(content_file, ["publish_time"])
-        contents["publish_time"] = pd.to_datetime(contents["publish_time"])
-    if revenue_file:
-        save_uploaded_file(st.session_state.get("user_id"), revenue_file, category="revenues_csv")
-        revenues = read_uploaded_csv(revenue_file, ["date"])
-        revenues["date"] = pd.to_datetime(revenues["date"]).dt.date
-    if campaign_file:
-        save_uploaded_file(st.session_state.get("user_id"), campaign_file, category="campaigns_csv")
-        campaigns = read_uploaded_csv(campaign_file, ["deadline"])
-        campaigns["deadline"] = pd.to_datetime(campaigns["deadline"]).dt.date
-    if ab_file:
-        save_uploaded_file(st.session_state.get("user_id"), ab_file, category="ab_tests_csv")
-        ab_tests = read_uploaded_csv(ab_file, ["date"])
-        ab_tests["date"] = pd.to_datetime(ab_tests["date"]).dt.date
-    extra_cols = st.columns(3)
-    product_file = extra_cols[0].file_uploader("产品 CSV" if ZH else "Products CSV", type=["csv"])
-    feedback_file = extra_cols[1].file_uploader("反馈 CSV" if ZH else "Feedback CSV", type=["csv"])
-    beta_file = extra_cols[2].file_uploader("内测 CSV" if ZH else "User Tests CSV", type=["csv"])
-    if product_file:
-        save_uploaded_file(st.session_state.get("user_id"), product_file, category="products_csv")
-        products = read_uploaded_csv(product_file, ["launch_date"])
-        products["launch_date"] = pd.to_datetime(products["launch_date"]).dt.date
-    if feedback_file:
-        save_uploaded_file(st.session_state.get("user_id"), feedback_file, category="feedback_csv")
-        feedback = read_uploaded_csv(feedback_file, ["created_at"])
-        feedback["created_at"] = pd.to_datetime(feedback["created_at"], errors="coerce")
-    if beta_file:
-        save_uploaded_file(st.session_state.get("user_id"), beta_file, category="beta_tests_csv")
-        beta_tests = read_uploaded_csv(beta_file, ["invited_at", "experienced_at"])
-        beta_tests["invited_at"] = pd.to_datetime(beta_tests["invited_at"], errors="coerce")
-        beta_tests["experienced_at"] = pd.to_datetime(beta_tests["experienced_at"], errors="coerce")
+    with st.container(border=True):
+        st.markdown("#### 一键上传资料" if ZH else "#### One Upload")
+        st.caption("直接上传 CSV、截图或文字文件，系统会自动判断资料类型。" if ZH else "Upload CSVs, screenshots or text files. SoloDeck detects the data type.")
+        auto_files = st.file_uploader(
+            "资料文件" if ZH else "Files",
+            type=["csv", "png", "jpg", "jpeg", "webp", "txt"],
+            accept_multiple_files=True,
+            key="settings_auto_upload_files",
+        )
+        auto_text = st.text_area(
+            "文字补充" if ZH else "Notes",
+            placeholder="可以粘贴平台后台数据、订单截图里的文字、收款记录、会议提醒..." if ZH else "Paste platform stats, order text, payment notes or reminders...",
+            height=72,
+            key="settings_auto_upload_text",
+        )
+        if st.button("自动读取并分析" if ZH else "Read and Analyze", use_container_width=True, key="settings_auto_upload_button"):
+            if not auto_files and not auto_text.strip():
+                st.warning("请先上传资料或粘贴文字。" if ZH else "Upload files or paste notes first.")
+            else:
+                counts = {key: 0 for key in CSV_TABLE_SIGNATURES}
+                ai_files = []
+                ai_text = auto_text.strip()
+                for uploaded in auto_files or []:
+                    name = getattr(uploaded, "name", "")
+                    mime = getattr(uploaded, "type", "") or ""
+                    if name.lower().endswith(".csv") or "csv" in mime:
+                        try:
+                            detected_table = infer_csv_table(read_uploaded_csv_auto(uploaded))
+                            frame = normalize_uploaded_table(read_uploaded_csv_auto(uploaded), detected_table, language)
+                            save_uploaded_file(st.session_state.get("user_id"), uploaded, category=f"{detected_table}_csv")
+                            if detected_table == "contents":
+                                contents = append_dataframe(contents, frame)
+                            elif detected_table == "revenues":
+                                revenues = append_dataframe(revenues, frame)
+                            elif detected_table == "campaigns":
+                                campaigns = append_dataframe(campaigns, frame)
+                            elif detected_table == "ab_tests":
+                                ab_tests = append_dataframe(ab_tests, frame)
+                            elif detected_table == "products":
+                                products = append_dataframe(products, frame)
+                            elif detected_table == "feedback":
+                                feedback = append_dataframe(feedback, frame)
+                            elif detected_table == "beta_tests":
+                                beta_tests = append_dataframe(beta_tests, frame)
+                            counts[detected_table] += len(frame)
+                        except Exception:
+                            st.warning((f"{name} 读取失败，请检查 CSV 格式。" if ZH else f"{name} could not be read. Check the CSV format."))
+                    else:
+                        ai_files.append(uploaded)
+                if ai_files or ai_text:
+                    if not ai_enabled:
+                        st.warning("截图和自然语言读取需要开启智能建议；CSV 已直接加入分析。" if ZH else "Screenshots and natural-language extraction need Smart Advice; CSVs were added directly.")
+                    else:
+                        with st.spinner("正在读取截图和文字..." if ZH else "Reading screenshots and notes..."):
+                            try:
+                                auto_target = guess_import_target(ai_text, ai_files)
+                                extracted = extract_records_from_uploads(ai_text, ai_files, auto_target, language=language)
+                                records = extracted.get("records", [])
+                                if auto_target == "contents":
+                                    contents = append_records(contents, records)
+                                elif auto_target == "revenues":
+                                    revenues = append_records(revenues, records)
+                                elif auto_target == "campaigns":
+                                    campaigns = append_records(campaigns, records)
+                                st.session_state.imported_records[auto_target].extend(records)
+                                for uploaded in ai_files:
+                                    save_uploaded_file(st.session_state.get("user_id"), uploaded, category=auto_target)
+                                new_todos = todos_from_records(auto_target, records, language) + todos_from_extracted_tasks(extracted.get("tasks", []), language)
+                                if not new_todos:
+                                    new_todos = todos_from_free_text(ai_text, language)
+                                add_todos(new_todos)
+                                counts[auto_target] += len(records)
+                            except Exception:
+                                st.error("读取失败。请换一张更清晰的截图，或把关键文字粘贴到文本框。" if ZH else "Import failed. Try a clearer screenshot or paste the key text.")
+                persist_workspace_for_current_user()
+                summary = "、".join(f"{table_label(table, language)} {count}" for table, count in counts.items() if count)
+                if summary:
+                    st.success(("已加入：" if ZH else "Added: ") + summary)
+                elif ai_text or ai_files:
+                    st.info("没有新增表格记录；如果是提醒事项，已加入任务中心。" if ZH else "No table records were added; reminders were added to actions when detected.")
+
+    with st.expander("高级：按表上传" if ZH else "Advanced: Upload by Table", expanded=False):
+        csv_cols = st.columns(4)
+        content_file = csv_cols[0].file_uploader("内容 CSV" if ZH else "Contents CSV", type=["csv"])
+        revenue_file = csv_cols[1].file_uploader("收入 CSV" if ZH else "Revenues CSV", type=["csv"])
+        campaign_file = csv_cols[2].file_uploader("商务 CSV" if ZH else "Campaigns CSV", type=["csv"])
+        ab_file = csv_cols[3].file_uploader("实验 CSV" if ZH else "Experiment CSV", type=["csv"])
+        if content_file:
+            save_uploaded_file(st.session_state.get("user_id"), content_file, category="contents_csv")
+            contents = read_uploaded_csv(content_file, ["publish_time"])
+            contents = ensure_date_column(contents, "publish_time", language, "内容 CSV" if ZH else "Contents CSV")
+            contents["publish_time"] = pd.to_datetime(contents["publish_time"])
+        if revenue_file:
+            save_uploaded_file(st.session_state.get("user_id"), revenue_file, category="revenues_csv")
+            revenues = read_uploaded_csv(revenue_file, ["date"])
+            revenues = ensure_date_column(revenues, "date", language, "收入 CSV" if ZH else "Revenues CSV")
+        if campaign_file:
+            save_uploaded_file(st.session_state.get("user_id"), campaign_file, category="campaigns_csv")
+            campaigns = read_uploaded_csv(campaign_file, ["deadline"])
+            campaigns = ensure_date_column(campaigns, "deadline", language, "商务 CSV" if ZH else "Campaigns CSV")
+        if ab_file:
+            save_uploaded_file(st.session_state.get("user_id"), ab_file, category="ab_tests_csv")
+            ab_tests = read_uploaded_csv(ab_file, ["date"])
+            ab_tests = ensure_date_column(ab_tests, "date", language, "实验 CSV" if ZH else "Experiment CSV")
+        extra_cols = st.columns(3)
+        product_file = extra_cols[0].file_uploader("产品 CSV" if ZH else "Products CSV", type=["csv"])
+        feedback_file = extra_cols[1].file_uploader("反馈 CSV" if ZH else "Feedback CSV", type=["csv"])
+        beta_file = extra_cols[2].file_uploader("内测 CSV" if ZH else "User Tests CSV", type=["csv"])
+        if product_file:
+            save_uploaded_file(st.session_state.get("user_id"), product_file, category="products_csv")
+            products = read_uploaded_csv(product_file, ["launch_date"])
+            products = ensure_date_column(products, "launch_date", language, "产品 CSV" if ZH else "Products CSV")
+        if feedback_file:
+            save_uploaded_file(st.session_state.get("user_id"), feedback_file, category="feedback_csv")
+            feedback = read_uploaded_csv(feedback_file, ["created_at"])
+            feedback["created_at"] = pd.to_datetime(feedback["created_at"], errors="coerce")
+        if beta_file:
+            save_uploaded_file(st.session_state.get("user_id"), beta_file, category="beta_tests_csv")
+            beta_tests = read_uploaded_csv(beta_file, ["invited_at", "experienced_at"])
+            beta_tests["invited_at"] = pd.to_datetime(beta_tests["invited_at"], errors="coerce")
+            beta_tests["experienced_at"] = pd.to_datetime(beta_tests["experienced_at"], errors="coerce")
 
 COMMON_PLATFORMS = ["xiaohongshu", "bilibili", "douyin", "wechat", "zhihu", "youtube", "tiktok", "instagram", "substack", "x"]
 data_platforms = sorted(contents["platform"].dropna().unique().tolist()) if "platform" in contents.columns else []
@@ -2118,21 +2325,7 @@ with setup_right:
             st.success(st.session_state.last_import_message)
             st.session_state.last_import_message = ""
         import_nonce = st.session_state.import_nonce
-        import_top = st.columns([0.34, 0.66])
-        import_target_label = import_top[0].selectbox(
-            "资料类型" if ZH else "Type",
-            ["内容数据", "收入数据", "商务合作"] if ZH else ["contents", "revenues", "campaigns"],
-            key="main_import_target",
-        )
-        import_target = {
-            "内容数据": "contents",
-            "收入数据": "revenues",
-            "商务合作": "campaigns",
-            "contents": "contents",
-            "revenues": "revenues",
-            "campaigns": "campaigns",
-        }[import_target_label]
-        import_files = import_top[1].file_uploader(
+        import_files = st.file_uploader(
             "截图或文件" if ZH else "Screenshots or Files",
             type=["png", "jpg", "jpeg", "webp", "txt", "csv"],
             accept_multiple_files=True,
@@ -2150,6 +2343,7 @@ with setup_right:
             else:
                 with st.spinner("正在读取资料..." if ZH else "Extracting materials..."):
                     try:
+                        import_target = guess_import_target(import_text, import_files)
                         extracted = extract_records_from_uploads(import_text, import_files, import_target, language=language)
                         records = extracted.get("records", [])
                         saved_file_ids = []

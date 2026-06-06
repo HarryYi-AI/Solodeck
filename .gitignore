@@ -14,3 +14,4 @@ __pycache__/
 *.db
 *.sqlite
 *.sqlite3
+solo_creator_agent/data/uploads/

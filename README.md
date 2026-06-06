@@ -240,10 +240,15 @@ Tomorrow at 9 AM I need to review robot campaign data with the client, but the r
 
 ```bash
 cd solo_creator_agent
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
+conda env create -f environment.yml
+conda activate solodeck-py310
 python -m streamlit run app.py --server.address 0.0.0.0 --server.port 8501
+```
+
+If you already have a compatible Python environment, install the same dependencies with:
+
+```bash
+pip install -r requirements.txt
 ```
 
 Open:

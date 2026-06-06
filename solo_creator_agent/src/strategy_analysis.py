@@ -130,6 +130,8 @@ def weekly_topic_plan(contents: pd.DataFrame, revenues: pd.DataFrame, n: int = 7
     topic_table = topic_result["table"]
     platform_table = platform_result["table"]
     title_table = title_result["table"]
+    if topic_table.empty or platform_table.empty or title_table.empty:
+        return []
     objectives = ["growth", "engagement", "conversion", "monetization"]
     objective_labels_zh = {
         "growth": "拉新增长",
