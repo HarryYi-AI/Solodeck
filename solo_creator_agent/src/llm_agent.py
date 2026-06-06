@@ -41,9 +41,13 @@ def _profile_config(profile: str = "basic") -> dict[str, str]:
 
 def _client(profile: str = "basic") -> OpenAI:
     config = _profile_config(profile)
+    timeout = float(os.getenv("OPENAI_TIMEOUT_SECONDS", "45"))
+    max_retries = int(os.getenv("OPENAI_MAX_RETRIES", "1"))
     return OpenAI(
         api_key=config["api_key"],
         base_url=config["base_url"] or None,
+        timeout=timeout,
+        max_retries=max_retries,
     )
 
 
