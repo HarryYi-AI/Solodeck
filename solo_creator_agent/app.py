@@ -501,11 +501,11 @@ def render_suggestion_feedback(items: list[dict], lang: str = "中文", key_pref
             rid = recommendation_id(item)
             cols = st.columns([0.58, 0.21, 0.21], vertical_alignment="center")
             cols[0].caption(item.get("title", ""))
-            if cols[1].button("适合我" if zh else "Useful", key=f"{key_prefix}_accept_{rid}_{idx}", width="stretch"):
+            if cols[1].button("适合我" if zh else "Useful", key=f"{key_prefix}_accept_{rid}_{idx}", use_container_width=True):
                 st.session_state.recommendation_feedback = record_feedback(st.session_state.get("recommendation_feedback", []), item, "accepted")
                 persist_workspace_for_current_user()
                 st.rerun()
-            if cols[2].button("先不看" if zh else "Skip", key=f"{key_prefix}_skip_{rid}_{idx}", width="stretch"):
+            if cols[2].button("先不看" if zh else "Skip", key=f"{key_prefix}_skip_{rid}_{idx}", use_container_width=True):
                 st.session_state.recommendation_feedback = record_feedback(st.session_state.get("recommendation_feedback", []), item, "dismissed")
                 persist_workspace_for_current_user()
                 st.rerun()
@@ -533,7 +533,7 @@ def require_invite_access() -> None:
     st.caption("输入体验码后进入工作台。")
     with st.container(border=True):
         code = st.text_input("体验码", type="password", placeholder="请输入邀请体验码")
-        if st.button("进入 SoloDeck", width="stretch"):
+        if st.button("进入 SoloDeck", use_container_width=True):
             if code.strip() == access_code:
                 st.session_state.access_granted = True
                 st.rerun()
@@ -925,7 +925,7 @@ def render_task_plan(short_items: list[dict], long_items: list[dict], lang: str)
         data=ics,
         file_name="solodeck_tasks.ics",
         mime="text/calendar",
-        width="stretch",
+        use_container_width=True,
         help="下载 .ics 文件后，可用 Apple Calendar、Outlook、Windows 日历或 Google Calendar 导入。" if zh else "Download the .ics file and import it into Apple Calendar, Outlook, Windows Calendar or Google Calendar.",
     )
     with calendar_cols[1]:
@@ -948,7 +948,7 @@ def render_task_plan(short_items: list[dict], long_items: list[dict], lang: str)
             data=ics_long,
             file_name="solodeck_long_tasks.ics",
             mime="text/calendar",
-            width="stretch",
+            use_container_width=True,
         )
         render_task_section(long_items, lang, limit=9, key_prefix="long_full")
 
@@ -1694,7 +1694,7 @@ def account_panel(lang: str) -> None:
                 for file in recent_files:
                     size_kb = int(file.get("size_bytes", 0) / 1024)
                     st.caption(f"{file.get('original_name')} · {size_kb} KB")
-        if st.button("退出登录" if zh else "Log out", width="stretch"):
+        if st.button("退出登录" if zh else "Log out", use_container_width=True):
             persist_workspace_for_current_user()
             st.session_state.signed_in = False
             st.session_state.account_name = ""
@@ -1714,7 +1714,7 @@ def account_panel(lang: str) -> None:
         if mode in ["注册", "Sign up"]:
             display_name = st.text_input("昵称" if zh else "Display Name", placeholder="SoloDeck user")
         password = st.text_input("密码" if zh else "Password", type="password")
-        submitted = st.form_submit_button(mode, width="stretch")
+        submitted = st.form_submit_button(mode, use_container_width=True)
     if submitted:
         if mode in ["注册", "Sign up"]:
             result = register_user(email, password, display_name)
@@ -1914,9 +1914,9 @@ def render_public_landing(lang: str) -> None:
         """
     )
     col1, col2, col3 = st.columns([0.2, 0.2, 0.6])
-    if col1.button("登录 / 注册" if zh else "Log in / Sign up", key="landing_login", width="stretch"):
+    if col1.button("登录 / 注册" if zh else "Log in / Sign up", key="landing_login", use_container_width=True):
         account_dialog(lang)
-    if col2.button("体验工作台" if zh else "Try Workspace", key="landing_guest", width="stretch"):
+    if col2.button("体验工作台" if zh else "Try Workspace", key="landing_guest", use_container_width=True):
         st.session_state.guest_mode = True
         st.rerun()
     st.caption("登录后会保存你的上传文件、导入数据和任务状态。" if zh else "Log in to save uploads, imported records and task status.")
@@ -2016,7 +2016,7 @@ with st.expander("设置与数据文件" if ZH else "Settings and CSV Data", exp
         value=True,
         help="默认只展示结果和建议；关闭后查看完整指标、图表和专业模块。" if ZH else "Show recommendations first.",
     )
-    if s3.button("载入演示数据" if ZH else "Load Example Data", width="stretch"):
+    if s3.button("载入演示数据" if ZH else "Load Example Data", use_container_width=True):
         if synthetic_data_dir:
             st.session_state.example_data_dir = str(synthetic_data_dir)
         else:
@@ -2137,7 +2137,7 @@ with setup_right:
             height=82,
             key=f"main_import_text_{import_nonce}",
         )
-        if st.button("读取并加入分析" if ZH else "Extract and Add", disabled=not ai_enabled, width="stretch"):
+        if st.button("读取并加入分析" if ZH else "Extract and Add", disabled=not ai_enabled, use_container_width=True):
             if not import_files and not import_text.strip():
                 st.warning("请先上传截图/文件或粘贴文字。" if ZH else "Upload files or paste text first.")
             else:
@@ -2210,7 +2210,7 @@ with st.container(border=True):
         with st.expander("查看上次智能建议" if ZH else "View Latest Smart Advice", expanded=False):
             st.markdown(st.session_state.latest_ai_advice)
     if ai_enabled:
-        if st.button("更新任务和经营建议" if ZH else "Update Tasks and Advice", width="stretch"):
+        if st.button("更新任务和经营建议" if ZH else "Update Tasks and Advice", use_container_width=True):
             with st.spinner("正在分析经营数据..." if ZH else "Analyzing your business data..."):
                 revenue_summary_preview = classify_revenue_summary(revenues).head(8)
                 platform_summary_preview = platform_revenue_summary(revenues).head(8)
@@ -2281,18 +2281,18 @@ if simple_mode:
         st.markdown("#### 经营报告" if ZH else "#### Operating Report")
         st.markdown(agent_result["report"])
         st.markdown("#### 流程记录" if ZH else "#### Workflow Trace")
-        st.dataframe(pd.DataFrame(workflow_trace["steps"]), width="stretch")
+        st.dataframe(pd.DataFrame(workflow_trace["steps"]), use_container_width=True)
         kb_frame = knowledge_frame(front_test_cards, language)
         if not kb_frame.empty:
             st.markdown("#### 知识匹配" if ZH else "#### Knowledge Matches")
-            st.dataframe(kb_frame, width="stretch")
+            st.dataframe(kb_frame, use_container_width=True)
         dl1, dl2 = st.columns(2)
         dl1.download_button(
             "下载 Markdown 报告" if ZH else "Download Markdown Report",
             agent_result["report"],
             file_name="solodeck_operating_report.md",
             mime="text/markdown",
-            width="stretch",
+            use_container_width=True,
             key="agent_md_download",
         )
         dl2.download_button(
@@ -2300,25 +2300,25 @@ if simple_mode:
             analysis_to_json(agent_result),
             file_name="solodeck_agent_results.json",
             mime="application/json",
-            width="stretch",
+            use_container_width=True,
             key="agent_json_download",
         )
         ate = agent_result["modules"].get("causal_estimator_agent", {}).get("ate", [])
         cate = agent_result["modules"].get("causal_estimator_agent", {}).get("cate", [])
         if ate:
             st.markdown("#### 策略增量估计" if ZH else "#### Strategy Lift Estimates")
-            st.dataframe(format_lift_table(ate, language), width="stretch", hide_index=True)
+            st.dataframe(format_lift_table(ate, language), use_container_width=True, hide_index=True)
         if cate:
             st.markdown("#### 不同主题的效果差异" if ZH else "#### Segment Differences")
-            st.dataframe(format_lift_table(cate, language).head(30), width="stretch", hide_index=True)
+            st.dataframe(format_lift_table(cate, language).head(30), use_container_width=True, hide_index=True)
         ab_agent = agent_result["modules"].get("ab_test_agent", {})
         if hasattr(ab_agent.get("ab_results"), "empty") and not ab_agent["ab_results"].empty:
             st.markdown("#### 实验效果" if ZH else "#### Experiment Results")
-            st.dataframe(format_experiment_table(ab_agent["ab_results"], language), width="stretch", hide_index=True)
+            st.dataframe(format_experiment_table(ab_agent["ab_results"], language), use_container_width=True, hide_index=True)
         fb_agent = agent_result["modules"].get("feedback_analysis_agent", {})
         if hasattr(fb_agent.get("roadmap"), "empty") and not fb_agent["roadmap"].empty:
             st.markdown("#### 用户反馈重点" if ZH else "#### Feedback Priorities")
-            st.dataframe(format_feedback_table(fb_agent["roadmap"], language), width="stretch", hide_index=True)
+            st.dataframe(format_feedback_table(fb_agent["roadmap"], language), use_container_width=True, hide_index=True)
         if metadata_ground_truth:
             with st.expander("示例数据机制" if ZH else "Example Data Mechanisms", expanded=False):
                 st.json(metadata_ground_truth)
@@ -2330,18 +2330,18 @@ if simple_mode:
         topic_df = topic_business_summary(contents)
         col1, col2 = st.columns(2)
         with col1:
-            st.dataframe(display_frame(revenue_summary, language), width="stretch")
+            st.dataframe(display_frame(revenue_summary, language), use_container_width=True)
         with col2:
-            st.dataframe(display_frame(platform_summary, language), width="stretch")
-        st.dataframe(display_frame(value_df.head(10), language), width="stretch")
-        st.dataframe(display_frame(topic_df.head(10), language), width="stretch")
+            st.dataframe(display_frame(platform_summary, language), use_container_width=True)
+        st.dataframe(display_frame(value_df.head(10), language), use_container_width=True)
+        st.dataframe(display_frame(topic_df.head(10), language), use_container_width=True)
 
     report = generate_weekly_business_report(contents, revenues, campaigns, language=language)
     with st.expander("生成经营周报" if ZH else "Generate Business Report"):
         st.markdown("#### 简短总结" if ZH else "#### Short Summary")
         st.write(concise_summary(contents, revenues, campaigns, language))
         if ai_enabled:
-            if st.button("生成精简顾问周报" if ZH else "Generate Executive Report", width="stretch", key="simple_ai_report"):
+            if st.button("生成精简顾问周报" if ZH else "Generate Executive Report", use_container_width=True, key="simple_ai_report"):
                 with st.spinner("正在生成周报..." if ZH else "Generating the report..."):
                     try:
                         report = polish_report(report, language=language)
@@ -2383,22 +2383,22 @@ with tabs[0]:
         col1, col2 = st.columns(2)
         with col1:
             revenue_summary_display = localize_frame(revenue_summary, language)
-            st.plotly_chart(px.pie(revenue_summary_display, names="revenue_type", values="amount", title="收入类型占比" if ZH else "Revenue Mix"), width="stretch")
-            st.dataframe(display_frame(revenue_summary, language), width="stretch")
+            st.plotly_chart(px.pie(revenue_summary_display, names="revenue_type", values="amount", title="收入类型占比" if ZH else "Revenue Mix"), use_container_width=True)
+            st.dataframe(display_frame(revenue_summary, language), use_container_width=True)
         with col2:
             platform_summary_display = localize_frame(platform_summary, language)
-            st.plotly_chart(px.bar(platform_summary_display, x="platform", y="amount", title="平台收入" if ZH else "Revenue by Platform"), width="stretch")
-            st.dataframe(display_frame(platform_summary, language), width="stretch")
+            st.plotly_chart(px.bar(platform_summary_display, x="platform", y="amount", title="平台收入" if ZH else "Revenue by Platform"), use_container_width=True)
+            st.dataframe(display_frame(platform_summary, language), use_container_width=True)
 
         st.markdown("#### 内容商业价值" if ZH else "#### Content Commercial Value")
         st.info("商业评分综合曝光、收藏、转粉、咨询、成交、收入和制作效率。" if ZH else "The score combines reach, saves, follows, consultations, conversions, revenue and production efficiency.")
         value_display = localize_frame(value_df, language)
         topic_display = localize_frame(topic_df, language)
-        st.plotly_chart(px.scatter(value_display, x="consultations", y="revenue", color="platform", size="commercial_score", hover_name="title", title="咨询量与收入" if ZH else "Consultations vs Revenue"), width="stretch")
-        st.dataframe(display_frame(value_df, language), width="stretch")
+        st.plotly_chart(px.scatter(value_display, x="consultations", y="revenue", color="platform", size="commercial_score", hover_name="title", title="咨询量与收入" if ZH else "Consultations vs Revenue"), use_container_width=True)
+        st.dataframe(display_frame(value_df, language), use_container_width=True)
         st.markdown("#### 主题商业汇总" if ZH else "#### Topic Business Summary")
-        st.plotly_chart(px.bar(topic_display, x="topic", y="revenue_per_hour", color="total_revenue", title="主题单位时间收益" if ZH else "Revenue per Hour by Topic"), width="stretch")
-        st.dataframe(display_frame(topic_df, language), width="stretch")
+        st.plotly_chart(px.bar(topic_display, x="topic", y="revenue_per_hour", color="total_revenue", title="主题单位时间收益" if ZH else "Revenue per Hour by Topic"), use_container_width=True)
+        st.dataframe(display_frame(topic_df, language), use_container_width=True)
 
 with tabs[1]:
     st.subheader("策略分析" if ZH else "Strategy Analysis")
@@ -2414,19 +2414,19 @@ with tabs[1]:
     suggestion_cards(test_cards[:5], language)
 
     st.markdown("### 下周选题计划" if ZH else "### Next Week Topic Plan")
-    st.dataframe(display_frame(pd.DataFrame(plan), language), width="stretch")
+    st.dataframe(display_frame(pd.DataFrame(plan), language), use_container_width=True)
 
     with st.expander("查看策略指标与平台定位" if ZH else "View Strategy Metrics and Platform Roles"):
         st.info(f"标题策略可信度：{title_result['confidence']}。建议用小实验验证后放大。" if ZH else f"Title strategy confidence: {title_result['confidence']}. Validate with a small test before scaling.")
         col1, col2 = st.columns(2)
         with col1:
             title_table_display = localize_frame(title_result["table"], language)
-            st.plotly_chart(px.bar(title_table_display, x="title_style", y="views", title="标题风格曝光表现" if ZH else "Views by Title Style"), width="stretch")
-            st.dataframe(display_frame(title_result["table"], language), width="stretch")
+            st.plotly_chart(px.bar(title_table_display, x="title_style", y="views", title="标题风格曝光表现" if ZH else "Views by Title Style"), use_container_width=True)
+            st.dataframe(display_frame(title_result["table"], language), use_container_width=True)
         with col2:
             topic_strategy_display = localize_frame(topic_result["table"], language)
-            st.plotly_chart(px.bar(topic_strategy_display, x="topic", y="revenue_per_hour", title="主题单位时间收益" if ZH else "Revenue per Hour by Topic"), width="stretch")
-            st.dataframe(display_frame(topic_result["table"], language), width="stretch")
+            st.plotly_chart(px.bar(topic_strategy_display, x="topic", y="revenue_per_hour", title="主题单位时间收益" if ZH else "Revenue per Hour by Topic"), use_container_width=True)
+            st.dataframe(display_frame(topic_result["table"], language), use_container_width=True)
 
         st.markdown("#### 平台定位" if ZH else "#### Platform Roles")
         if ZH:
@@ -2434,10 +2434,10 @@ with tabs[1]:
             st.json(role_display)
         else:
             st.json(platform_result["platform_roles"])
-        st.dataframe(display_frame(platform_result["table"], language), width="stretch")
+        st.dataframe(display_frame(platform_result["table"], language), use_container_width=True)
 
         st.markdown("#### 发布时间段" if ZH else "#### Publishing Time")
-        st.dataframe(display_frame(time_df.head(20), language), width="stretch")
+        st.dataframe(display_frame(time_df.head(20), language), use_container_width=True)
 
 with tabs[1]:
     st.divider()
@@ -2483,21 +2483,21 @@ with tabs[1]:
     )
     with st.expander("查看变量语义、反驳检验和跨平台增量" if ZH else "View Variable Semantics, Refutation and Cross-Platform Increment"):
         st.markdown("#### 变量语义理解" if ZH else "#### Variable Semantics")
-        st.dataframe(variable_map, width="stretch")
+        st.dataframe(variable_map, use_container_width=True)
         st.markdown("#### 协变量平衡性" if ZH else "#### Covariate Balance")
         if hasattr(refute["balance"], "empty") and not refute["balance"].empty:
-            st.dataframe(refute["balance"], width="stretch")
+            st.dataframe(refute["balance"], use_container_width=True)
         st.markdown("#### 反驳检验" if ZH else "#### Refutation Tests")
         st.json({k: v for k, v in refute.items() if k != "balance"})
         increment = cross_platform_increment(contents, outcome_col=outcome_col)
         if not increment.empty:
             st.markdown("#### 同内容跨平台增量" if ZH else "#### Same-Content Cross-Platform Increment")
-            st.dataframe(display_frame(increment.head(20), language), width="stretch")
+            st.dataframe(display_frame(increment.head(20), language), use_container_width=True)
 
     experiment_candidates = weekly_experiment_plan(contents, language=language)
     if experiment_candidates:
         with st.expander("自动生成的下周实验候选" if ZH else "Auto-Generated Experiment Candidates"):
-            st.dataframe(pd.DataFrame(experiment_candidates)[["hypothesis", "primary_metric", "estimated_effect", "suggested_min_total_sample", "data_confidence"]], width="stretch")
+            st.dataframe(pd.DataFrame(experiment_candidates)[["hypothesis", "primary_metric", "estimated_effect", "suggested_min_total_sample", "data_confidence"]], use_container_width=True)
 
     st.divider()
     st.subheader("实验向导：用最小实验验证内容策略" if ZH else "Experiment Guide: Validate Content Strategy with Minimal Tests")
@@ -2531,8 +2531,8 @@ with tabs[1]:
         st.warning("当前平台暂无实验数据。可上传实验 CSV，或先使用系统生成的实验方案。" if ZH else "No experiment data for selected platforms. Upload an experiment CSV or use the generated plan first.")
     else:
         ab_display = localize_frame(ab_result, language)
-        st.plotly_chart(px.bar(ab_display, x="experiment_id", y="relative_lift", color="outcome_metric", title="实验相对提升" if ZH else "Relative Lift"), width="stretch")
-        st.dataframe(display_frame(ab_result, language), width="stretch")
+        st.plotly_chart(px.bar(ab_display, x="experiment_id", y="relative_lift", color="outcome_metric", title="实验相对提升" if ZH else "Relative Lift"), use_container_width=True)
+        st.dataframe(display_frame(ab_result, language), use_container_width=True)
 
     st.markdown("### 设计下周实验" if ZH else "### Design Next Week's Experiment")
     if ZH:
@@ -2593,7 +2593,7 @@ with tabs[1]:
         for item in design["execution_plan"]:
             st.write(f"- {item}")
     if ai_enabled and not ab_result.empty:
-        if st.button("解读实验结果" if ZH else "Interpret Experiment", width="stretch"):
+        if st.button("解读实验结果" if ZH else "Interpret Experiment", use_container_width=True):
             with st.spinner("正在解读实验结果..." if ZH else "Interpreting experiment results..."):
                 try:
                     st.markdown(interpret_experiment(ab_result, design, language=language))
@@ -2620,7 +2620,7 @@ with tabs[2]:
     alerts = campaign_risk_alerts(campaigns, language=language)
     st.markdown("### 风险提醒" if ZH else "### Risk Alerts")
     suggestion_cards(alerts, language)
-    st.dataframe(display_frame(campaigns, language), width="stretch")
+    st.dataframe(display_frame(campaigns, language), use_container_width=True)
 
     st.markdown("### 报价建议" if ZH else "### Pricing Suggestion")
     p1, p2, p3, p4 = st.columns(4)
@@ -2670,13 +2670,13 @@ with tabs[3]:
         if overlap_df.empty:
             st.info("暂无相似内容数据。" if ZH else "No content similarity data.")
         else:
-            st.dataframe(display_frame(overlap_df.head(20), language), width="stretch")
+            st.dataframe(display_frame(overlap_df.head(20), language), use_container_width=True)
     with col2:
         st.markdown("#### 产品变体差异" if ZH else "#### Product Variants")
         if variant_df.empty:
             st.info("暂无产品数据。" if ZH else "No product data.")
         else:
-            st.dataframe(display_frame(variant_df.head(20), language), width="stretch")
+            st.dataframe(display_frame(variant_df.head(20), language), use_container_width=True)
 
 
 with tabs[4]:
@@ -2689,19 +2689,19 @@ with tabs[4]:
     with col1:
         st.markdown("#### 内容系列" if ZH else "#### Content Series")
         if not content_series.empty:
-            st.dataframe(display_frame(content_series, language), width="stretch")
+            st.dataframe(display_frame(content_series, language), use_container_width=True)
             gain = marginal_gain_of_new_item(contents, "series_id", "publish_time", "revenue")
-            st.dataframe(display_frame(gain.tail(20), language), width="stretch")
+            st.dataframe(display_frame(gain.tail(20), language), use_container_width=True)
     with col2:
         st.markdown("#### 产品系列" if ZH else "#### Product Series")
         if not product_series.empty:
-            st.dataframe(display_frame(product_series, language), width="stretch")
+            st.dataframe(display_frame(product_series, language), use_container_width=True)
             product_gain = marginal_gain_of_new_item(products, "series_id", "launch_date", "revenue")
-            st.dataframe(display_frame(product_gain.tail(20), language), width="stretch")
+            st.dataframe(display_frame(product_gain.tail(20), language), use_container_width=True)
     cannibal = cannibalization_check(contents, "series_id", "publish_time", "revenue")
     if not cannibal.empty:
         st.markdown("#### 蚕食风险" if ZH else "#### Cannibalization Risk")
-        st.dataframe(display_frame(cannibal, language), width="stretch")
+        st.dataframe(display_frame(cannibal, language), use_container_width=True)
 
 
 with tabs[5]:
@@ -2717,13 +2717,13 @@ with tabs[5]:
         f2.metric("负面占比" if ZH else "Negative", f"{classified_feedback['sentiment'].eq('negative').mean():.1%}")
         f3.metric("高优先级问题" if ZH else "High Priority", int(roadmap["priority"].eq("high").sum()) if not roadmap.empty else 0)
         st.markdown("#### 下一版优先事项" if ZH else "#### Roadmap")
-        st.dataframe(display_frame(roadmap, language), width="stretch")
+        st.dataframe(display_frame(roadmap, language), use_container_width=True)
         st.markdown("#### 高频主题与原文证据" if ZH else "#### Topics and Evidence")
-        st.dataframe(display_frame(topics, language), width="stretch")
+        st.dataframe(display_frame(topics, language), use_container_width=True)
         link = sentiment_revenue_link(classified_feedback, products)
         if not link.empty:
             st.caption("建议优先验证情绪变化最明显的主题。" if ZH else "Prioritize topics with the clearest sentiment shifts.")
-            st.dataframe(display_frame(link, language), width="stretch")
+            st.dataframe(display_frame(link, language), use_container_width=True)
 
 
 with tabs[6]:
@@ -2765,7 +2765,7 @@ with tabs[7]:
     render_html(f"<div class='priority-card p0'><div class='priority-title'>{safe_text('推广判断' if ZH else 'Launch Decision')}</div><div class='priority-body'>{safe_text(insight)}</div></div>")
     beta_effect = beta_feedback_effect(beta_tests, feedback)
     if beta_effect.get("effects"):
-        st.dataframe(pd.DataFrame(beta_effect["effects"]), width="stretch")
+        st.dataframe(pd.DataFrame(beta_effect["effects"]), use_container_width=True)
     negative_rate = classify_feedback(feedback)["sentiment"].eq("negative").mean() if not feedback.empty else 0
     next_step = recommend_next_validation_step({"readiness_score": beta_test_readiness_check(products, feedback, beta_tests)["readiness_score"], "lift": effect.get("effect_estimate", effect.get("mean_difference", 0)), "negative_rate": negative_rate})
     st.success(f"{'推荐动作' if ZH else 'Recommended Action'}：{next_step['recommended_action']}。{next_step['reason']}")
@@ -2781,7 +2781,7 @@ with tabs[8]:
     st.markdown("### 简短总结" if ZH else "### Short Summary")
     st.write(concise_summary(contents, revenues, campaigns, language))
     if ai_enabled:
-        if st.button("生成精简顾问报告" if ZH else "Generate Executive Report", width="stretch"):
+        if st.button("生成精简顾问报告" if ZH else "Generate Executive Report", use_container_width=True):
             with st.spinner("正在生成报告..." if ZH else "Generating the report..."):
                 try:
                     report = polish_report(report, language=language)
