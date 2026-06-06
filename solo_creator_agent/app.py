@@ -114,12 +114,6 @@ st.markdown(
         border-color: #86b79f !important;
         color: #143b30 !important;
     }
-    [data-testid="stVerticalBlockBorderWrapper"] {
-        border-color: #e9e4dc !important;
-        border-radius: 14px !important;
-        box-shadow: 0 10px 30px rgba(36, 45, 38, 0.035) !important;
-        background: #fffefc !important;
-    }
     .soft-card {
         border: 1px solid #e9e4dc;
         border-radius: 14px;
@@ -449,6 +443,29 @@ def metric_card(label: str, value, help_text: str | None = None):
 def render_html(markup: str) -> None:
     """Render custom UI HTML without Markdown treating indented tags as code."""
     st.html(str(markup).strip())
+
+
+def select_platforms_widget(options: list[str], default: list[str], lang: str) -> list[str]:
+    label = "平台" if lang == "中文" else "Platforms"
+    help_text = (
+        "支持国内外主流内容平台。基础分析逻辑一致，但平台定位、收入效率和策略建议会随平台数据变化。"
+        if lang == "中文"
+        else "Supports mainstream Chinese and global creator platforms."
+    )
+    format_func = platform_name if lang == "中文" else lambda x: x
+    if hasattr(st, "pills"):
+        pills_kwargs = {
+            "label": label,
+            "options": options,
+            "format_func": format_func,
+            "selection_mode": "multi",
+            "key": "selected_platforms",
+            "help": help_text,
+        }
+        if "selected_platforms" not in st.session_state:
+            pills_kwargs["default"] = default
+        return list(st.pills(**pills_kwargs))
+    return list(st.multiselect(label, options, default=default, format_func=format_func, help=help_text, key="selected_platforms"))
 
 
 def suggestion_cards(items: list[dict], lang: str = "中文"):
@@ -2085,17 +2102,7 @@ with setup_left:
     with st.container(border=True):
         st.markdown("### 1. 选择平台" if ZH else "### 1. Platforms")
         st.caption("选常用渠道。" if ZH else "Pick active channels.")
-        pills_kwargs = {
-            "label": "平台" if ZH else "Platforms",
-            "options": all_platforms,
-            "format_func": platform_name if ZH else lambda x: x,
-            "selection_mode": "multi",
-            "key": "selected_platforms",
-            "help": "支持国内外主流内容平台。基础分析逻辑一致，但平台定位、收入效率和策略建议会随平台数据变化。" if ZH else "Supports mainstream Chinese and global creator platforms.",
-        }
-        if "selected_platforms" not in st.session_state:
-            pills_kwargs["default"] = default_selected_platforms
-        selected_platforms = st.pills(**pills_kwargs)
+        selected_platforms = select_platforms_widget(all_platforms, default_selected_platforms, language)
         setup_cols = st.columns(2)
         setup_cols[0].metric("平台" if ZH else "Platforms", len(selected_platforms))
         setup_cols[1].metric("内容" if ZH else "Content", int(contents[contents["platform"].isin(selected_platforms)]["content_id"].nunique()) if selected_platforms else len(contents))
@@ -2320,7 +2327,7 @@ if simple_mode:
             st.markdown("#### 用户反馈重点" if ZH else "#### Feedback Priorities")
             st.dataframe(format_feedback_table(fb_agent["roadmap"], language), use_container_width=True, hide_index=True)
         if metadata_ground_truth:
-            with st.expander("示例数据机制" if ZH else "Example Data Mechanisms", expanded=False):
+            if st.checkbox("查看示例数据机制" if ZH else "Show Example Data Mechanisms", key="show_metadata_ground_truth"):
                 st.json(metadata_ground_truth)
 
     with st.expander("我想看指标、图表和专业分析" if ZH else "Show Metrics, Charts and Advanced Analysis"):
@@ -2350,7 +2357,7 @@ if simple_mode:
         if not ZH:
             report = englishize_text(report)
         st.download_button("下载周报" if ZH else "Download Report", report, file_name="creator_agent_report.md", key="simple_download")
-        with st.expander("查看详细周报" if ZH else "View Detailed Report"):
+        if st.checkbox("查看详细周报" if ZH else "View Detailed Report", key="show_simple_detailed_report"):
             st.markdown(report)
 
     st.stop()
