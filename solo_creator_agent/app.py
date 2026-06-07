@@ -7,6 +7,7 @@ import html
 from io import BytesIO
 import json
 import re
+import zipfile
 from datetime import date, datetime, timedelta
 from pathlib import Path
 
@@ -36,6 +37,7 @@ from src.report_generator import generate_strategy_report, generate_weekly_busin
 from src.revenue_analysis import calculate_rpm, classify_revenue_summary, content_commercial_value, pending_payment_summary, platform_revenue_summary, topic_business_summary
 from src.incremental_effect import estimate_feature_upgrade_effect, estimate_incremental_effect, generate_incremental_insight
 from src.knowledge_base import knowledge_cards, knowledge_frame
+from src.knowledge_graph import graph_rag_answer, plot_knowledge_graph
 from src.product_feedback import beta_feedback_effect, classify_feedback, feedback_to_roadmap, feedback_topic_clustering, generate_feedback_report, sentiment_revenue_link
 from src.recommendation_learning import learning_summary, rank_recommendations, record_feedback, recommendation_id
 from src.series_analysis import cannibalization_check, content_series_performance, marginal_gain_of_new_item, product_series_performance, recommend_series_strategy
@@ -481,8 +483,26 @@ def infer_csv_table(df: pd.DataFrame) -> str:
     return best_table if scores[best_table] >= 2 else "contents"
 
 
-def read_uploaded_csv_auto(uploaded_file) -> pd.DataFrame:
-    return pd.read_csv(BytesIO(uploaded_file.getvalue()))
+def read_uploaded_tables_auto(uploaded_file) -> list[tuple[str, pd.DataFrame]]:
+    name = getattr(uploaded_file, "name", "uploaded")
+    data = uploaded_file.getvalue()
+    lower = name.lower()
+    if lower.endswith(".zip"):
+        tables: list[tuple[str, pd.DataFrame]] = []
+        with zipfile.ZipFile(BytesIO(data)) as archive:
+            for member in archive.namelist():
+                member_lower = member.lower()
+                if member_lower.endswith("/"):
+                    continue
+                payload = archive.read(member)
+                if member_lower.endswith(".csv"):
+                    tables.append((member, pd.read_csv(BytesIO(payload))))
+                elif member_lower.endswith((".xlsx", ".xls")):
+                    tables.append((member, pd.read_excel(BytesIO(payload))))
+        return tables
+    if lower.endswith((".xlsx", ".xls")):
+        return [(name, pd.read_excel(BytesIO(data)))]
+    return [(name, pd.read_csv(BytesIO(data)))]
 
 
 def append_dataframe(base: pd.DataFrame, incoming: pd.DataFrame) -> pd.DataFrame:
@@ -2177,7 +2197,7 @@ with st.expander("设置与数据文件" if ZH else "Settings and CSV Data", exp
         st.caption("直接上传 CSV、截图或文字文件，系统会自动判断资料类型。" if ZH else "Upload CSVs, screenshots or text files. SoloDeck detects the data type.")
         auto_files = st.file_uploader(
             "资料文件" if ZH else "Files",
-            type=["csv", "png", "jpg", "jpeg", "webp", "txt"],
+            type=["csv", "xlsx", "xls", "zip", "png", "jpg", "jpeg", "webp", "txt"],
             accept_multiple_files=True,
             key="settings_auto_upload_files",
         )
@@ -2197,28 +2217,32 @@ with st.expander("设置与数据文件" if ZH else "Settings and CSV Data", exp
                 for uploaded in auto_files or []:
                     name = getattr(uploaded, "name", "")
                     mime = getattr(uploaded, "type", "") or ""
-                    if name.lower().endswith(".csv") or "csv" in mime:
+                    if name.lower().endswith((".csv", ".xlsx", ".xls", ".zip")) or "csv" in mime or "spreadsheet" in mime:
                         try:
-                            detected_table = infer_csv_table(read_uploaded_csv_auto(uploaded))
-                            frame = normalize_uploaded_table(read_uploaded_csv_auto(uploaded), detected_table, language)
-                            save_uploaded_file(st.session_state.get("user_id"), uploaded, category=f"{detected_table}_csv")
-                            if detected_table == "contents":
-                                contents = append_dataframe(contents, frame)
-                            elif detected_table == "revenues":
-                                revenues = append_dataframe(revenues, frame)
-                            elif detected_table == "campaigns":
-                                campaigns = append_dataframe(campaigns, frame)
-                            elif detected_table == "ab_tests":
-                                ab_tests = append_dataframe(ab_tests, frame)
-                            elif detected_table == "products":
-                                products = append_dataframe(products, frame)
-                            elif detected_table == "feedback":
-                                feedback = append_dataframe(feedback, frame)
-                            elif detected_table == "beta_tests":
-                                beta_tests = append_dataframe(beta_tests, frame)
-                            counts[detected_table] += len(frame)
+                            detected_categories = set()
+                            for table_name, raw_frame in read_uploaded_tables_auto(uploaded):
+                                detected_table = infer_csv_table(raw_frame)
+                                detected_categories.add(detected_table)
+                                frame = normalize_uploaded_table(raw_frame, detected_table, language)
+                                if detected_table == "contents":
+                                    contents = append_dataframe(contents, frame)
+                                elif detected_table == "revenues":
+                                    revenues = append_dataframe(revenues, frame)
+                                elif detected_table == "campaigns":
+                                    campaigns = append_dataframe(campaigns, frame)
+                                elif detected_table == "ab_tests":
+                                    ab_tests = append_dataframe(ab_tests, frame)
+                                elif detected_table == "products":
+                                    products = append_dataframe(products, frame)
+                                elif detected_table == "feedback":
+                                    feedback = append_dataframe(feedback, frame)
+                                elif detected_table == "beta_tests":
+                                    beta_tests = append_dataframe(beta_tests, frame)
+                                counts[detected_table] += len(frame)
+                            category = "_".join(sorted(detected_categories)) or "tabular"
+                            save_uploaded_file(st.session_state.get("user_id"), uploaded, category=f"{category}_upload")
                         except Exception:
-                            st.warning((f"{name} 读取失败，请检查 CSV 格式。" if ZH else f"{name} could not be read. Check the CSV format."))
+                            st.warning((f"{name} 读取失败，请检查表格格式。" if ZH else f"{name} could not be read. Check the table format."))
                     else:
                         ai_files.append(uploaded)
                 if ai_files or ai_text:
@@ -2327,7 +2351,7 @@ with setup_right:
         import_nonce = st.session_state.import_nonce
         import_files = st.file_uploader(
             "截图或文件" if ZH else "Screenshots or Files",
-            type=["png", "jpg", "jpeg", "webp", "txt", "csv"],
+            type=["png", "jpg", "jpeg", "webp", "txt", "csv", "xlsx", "xls", "zip"],
             accept_multiple_files=True,
             key=f"main_import_files_{import_nonce}",
         )
@@ -2472,6 +2496,53 @@ if simple_mode:
         if kb:
             st.markdown("#### 经营知识依据" if ZH else "#### Operating Knowledge")
             suggestion_cards(kb, language)
+        kg_agent = agent_result["modules"].get("knowledge_graph_agent", {})
+        kg_nodes = kg_agent.get("nodes", pd.DataFrame())
+        kg_edges = kg_agent.get("edges", pd.DataFrame())
+        if hasattr(kg_nodes, "empty") and not kg_nodes.empty:
+            st.markdown("#### 知识图谱解释" if ZH else "#### Knowledge Graph Explanation")
+            st.caption(
+                "图谱用于解释内容、产品、平台、功能和反馈之间的关系；因果判断仍以实验和增量估计为准。"
+                if ZH
+                else "The graph explains relationships among content, products, platforms, features and feedback; causal claims still rely on experiments and lift estimates."
+            )
+            st.plotly_chart(plot_knowledge_graph(kg_nodes, kg_edges, language), use_container_width=True)
+            q_cols = st.columns([0.24, 0.52, 0.24])
+            kg_scope = q_cols[0].selectbox(
+                "查询范围" if ZH else "Scope",
+                ["全局查询", "局部查询"] if ZH else ["global", "local"],
+                key="kg_query_scope",
+            )
+            kg_query = q_cols[1].text_input(
+                "查询内容" if ZH else "Query",
+                placeholder="输入功能、产品、标题或用户人群；全局查询可留空" if ZH else "Feature, product, title or user segment; leave blank for global",
+                key="kg_query_text",
+            )
+            if q_cols[2].button("查询图谱" if ZH else "Query Graph", use_container_width=True):
+                st.session_state.kg_query_result = graph_rag_answer(
+                    kg_query,
+                    kg_scope,
+                    kg_nodes,
+                    kg_edges,
+                    contents,
+                    products,
+                    feedback,
+                    revenues,
+                    language,
+                )
+            kg_query_result = st.session_state.get("kg_query_result")
+            if kg_query_result:
+                st.info(kg_query_result["answer"])
+                evidence = kg_query_result.get("evidence")
+                if isinstance(evidence, pd.DataFrame) and not evidence.empty:
+                    st.dataframe(evidence, use_container_width=True, hide_index=True)
+                elif isinstance(evidence, dict):
+                    e1, e2 = st.columns(2)
+                    for index, (name, frame) in enumerate(evidence.items()):
+                        if hasattr(frame, "empty") and not frame.empty:
+                            with (e1 if index % 2 == 0 else e2):
+                                st.caption(name)
+                                st.dataframe(frame.head(5), use_container_width=True, hide_index=True)
 
     with st.expander("详细分析与下载" if ZH else "Detailed Analysis and Downloads", expanded=False):
         st.caption(
@@ -2520,6 +2591,16 @@ if simple_mode:
         if hasattr(fb_agent.get("roadmap"), "empty") and not fb_agent["roadmap"].empty:
             st.markdown("#### 用户反馈重点" if ZH else "#### Feedback Priorities")
             st.dataframe(format_feedback_table(fb_agent["roadmap"], language), use_container_width=True, hide_index=True)
+        kg_agent = agent_result["modules"].get("knowledge_graph_agent", {})
+        if hasattr(kg_agent.get("feature_combinations"), "empty") and not kg_agent["feature_combinations"].empty:
+            st.markdown("#### 知识图谱查询：高转化功能组合" if ZH else "#### KG Query: High-Converting Feature Mix")
+            st.dataframe(kg_agent["feature_combinations"], use_container_width=True, hide_index=True)
+        if hasattr(kg_agent.get("series_exploration"), "empty") and not kg_agent["series_exploration"].empty:
+            st.markdown("#### 知识图谱查询：内容系列与疲劳风险" if ZH else "#### KG Query: Content Series and Fatigue")
+            st.dataframe(kg_agent["series_exploration"], use_container_width=True, hide_index=True)
+        if hasattr(kg_agent.get("platform_topic"), "empty") and not kg_agent["platform_topic"].empty:
+            st.markdown("#### 知识图谱查询：平台、主题与收入" if ZH else "#### KG Query: Platform, Topic and Revenue")
+            st.dataframe(kg_agent["platform_topic"], use_container_width=True, hide_index=True)
         if metadata_ground_truth:
             if st.checkbox("查看示例数据机制" if ZH else "Show Example Data Mechanisms", key="show_metadata_ground_truth"):
                 st.json(metadata_ground_truth)

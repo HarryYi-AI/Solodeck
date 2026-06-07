@@ -25,6 +25,7 @@ from .causal_estimator import (
 )
 from .causal_experiment import analyze_ab_test
 from .incremental_effect import estimate_feature_upgrade_effect, estimate_incremental_effect, fixed_effect_estimate, paired_variant_effect
+from .knowledge_graph import build_knowledge_graph, feature_combination_query, global_graph_query, graph_insight_cards, platform_topic_query, series_exploration_query, strategy_constraint_checks
 from .product_feedback import beta_feedback_effect, classify_feedback, feedback_to_roadmap
 from .revenue_analysis import pending_payment_summary, platform_revenue_summary, topic_business_summary
 from .series_analysis import cannibalization_check, content_series_performance, product_series_performance
@@ -40,6 +41,7 @@ MODULE_NAMES_ZH = {
     "feedback_analysis_agent": "用户反馈",
     "revenue_analysis_agent": "收入与商务",
     "ab_test_agent": "实验效果",
+    "knowledge_graph_agent": "知识图谱解释",
 }
 
 MODULE_NAMES_EN = {
@@ -49,6 +51,7 @@ MODULE_NAMES_EN = {
     "feedback_analysis_agent": "Feedback Priorities",
     "revenue_analysis_agent": "Revenue and Business",
     "ab_test_agent": "Experiment Analysis",
+    "knowledge_graph_agent": "Knowledge Graph",
 }
 
 
@@ -477,6 +480,36 @@ def ab_test_agent(ab_tests: pd.DataFrame, beta_tests: pd.DataFrame, lang: str = 
     return {"cards": [asdict(c) for c in cards], "ab_results": ab_result, "beta_effects": beta}
 
 
+def knowledge_graph_agent(contents: pd.DataFrame, products: pd.DataFrame, feedback: pd.DataFrame, revenues: pd.DataFrame, campaigns: pd.DataFrame, ab_tests: pd.DataFrame, beta_tests: pd.DataFrame, lang: str = "中文") -> dict[str, Any]:
+    graph = build_knowledge_graph(contents, products, feedback, revenues, campaigns, ab_tests=ab_tests, beta_tests=beta_tests, lang=lang)
+    feature_query = feature_combination_query(products, lang=lang)
+    series_query = series_exploration_query(contents, lang=lang)
+    platform_topic = platform_topic_query(contents, revenues, lang=lang)
+    global_context = global_graph_query(contents, products, feedback, revenues, lang=lang)
+    cards = []
+    for card in graph_insight_cards(products, contents, feedback, lang):
+        cards.append(InsightCard(
+            agent="knowledge_graph_agent",
+            finding_type=_label(lang, "图谱探索", "Graph exploration"),
+            title=card["title"],
+            insight=card["reason"],
+            action=card["action"],
+            priority=card.get("priority", "medium"),
+            confidence=_label(lang, "解释辅助，不作为因果结论", "Exploratory explanation, not causal evidence"),
+            metric="knowledge_graph",
+            sample_size=int(len(graph["nodes"])),
+        ))
+    return {
+        "cards": [asdict(card) for card in cards],
+        "nodes": graph["nodes"],
+        "edges": graph["edges"],
+        "feature_combinations": feature_query,
+        "series_exploration": series_query,
+        "platform_topic": platform_topic,
+        "global_context": global_context,
+    }
+
+
 def run_agent_suite(
     contents: pd.DataFrame,
     revenues: pd.DataFrame,
@@ -494,12 +527,14 @@ def run_agent_suite(
         "causal_estimator_agent": causal_estimator_agent(contents, products, beta_tests, lang),
         "ab_test_agent": ab_test_agent(ab_tests, beta_tests, lang),
         "feedback_analysis_agent": feedback_analysis_agent(feedback, products, contents, lang),
+        "knowledge_graph_agent": knowledge_graph_agent(contents, products, feedback, revenues, campaigns, ab_tests, beta_tests, lang),
     }
     cards = []
     for name, result in modules.items():
         for card in result.get("cards", []):
             card["agent_label"] = (MODULE_NAMES_ZH if lang == "中文" else MODULE_NAMES_EN).get(name, name)
             cards.append(card)
+    cards = strategy_constraint_checks(cards, contents, ab_tests, beta_tests, lang)
     priority_order = {"high": 0, "medium": 1, "low": 2}
     cards = sorted(cards, key=lambda c: priority_order.get(c.get("priority", "medium"), 1))
 
@@ -559,6 +594,12 @@ def generate_unified_report(cards: list[dict[str, Any]], modules: dict[str, Any]
         high = cannibal[cannibal["cannibalization_risk"].isin(["high", "medium"])].head(3)
         for _, row in high.iterrows():
             lines.append(f"- {row['series_id']}：{row['explanation']}")
+    kg = modules.get("knowledge_graph_agent", {})
+    kg_cards = kg.get("cards", [])
+    if kg_cards:
+        lines.extend(["", "## 知识图谱探索"])
+        for card in kg_cards[:3]:
+            lines.append(f"- {card['title']}：{card['action']}（图谱仅用于解释关系，不直接证明因果。）")
     lines.extend(["", "## 说明", "SoloDeck 区分相关性发现、估计因果和实验结果。建议先用低成本实验验证，再放大投入。"])
     return "\n".join(lines)
 

@@ -47,6 +47,20 @@ def build_workflow_trace(
             output_count=1,
         ),
         WorkflowStep(
+            "知识图谱构建" if zh else "Knowledge graph build",
+            "完成" if zh else "done",
+            "把内容、平台、账号、产品功能、用户反馈和实验记录连接成实体关系图。" if zh else "Linked content, platforms, accounts, product features, feedback and experiments into an entity graph.",
+            record_count=len(contents) + len(products) + len(feedback) + len(ab_tests) + len(beta_tests),
+            output_count=len(modules.get("knowledge_graph_agent", {}).get("nodes", [])),
+        ),
+        WorkflowStep(
+            "图谱检索" if zh else "Graph retrieval",
+            "完成" if zh else "done",
+            "先从图谱里找到相关内容系列、功能组合、用户问题和平台关系，再交给后续分析判断。" if zh else "Retrieved related series, feature mixes, user issues and platform links before downstream analysis.",
+            record_count=len(modules.get("knowledge_graph_agent", {}).get("edges", [])),
+            output_count=len(modules.get("knowledge_graph_agent", {}).get("cards", [])),
+        ),
+        WorkflowStep(
             "收益判断" if zh else "Revenue analysis",
             "完成" if zh else "done",
             "识别收入主阵地、待收款和商务风险。" if zh else "Identified revenue anchors, receivables and business risks.",
@@ -77,13 +91,13 @@ def build_workflow_trace(
         WorkflowStep(
             "行动生成" if zh else "Action generation",
             "完成" if zh else "done",
-            "只保留最值得本周执行的建议。" if zh else "Kept only the most useful actions for this week.",
+            "结合发布规则、实验前置条件和样本量，过滤不适合直接执行的建议。" if zh else "Applied publishing rules, experiment prerequisites and sample-size checks to filter actions.",
             record_count=0,
             output_count=len(cards),
         ),
     ]
     return {
-        "engine": "LangGraph 可接入" if zh and langgraph_available() else "轻量工作流" if zh else "LangGraph-ready" if langgraph_available() else "lightweight workflow",
+        "engine": "自研多 Agent 调度，LangGraph 可替换" if zh else "self-managed multi-agent workflow, LangGraph-ready",
         "created_at": datetime.now(timezone.utc).isoformat(),
         "steps": [asdict(step) for step in steps],
     }
